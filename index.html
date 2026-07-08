@@ -302,7 +302,7 @@
                         <div class="input-group"
                             style="margin-top: 8px; padding: 10px; background: #0c1220; border-radius: 6px; border: 1px dashed var(--border);">
                             <span
-                                style="color: var(--tier1-red); font-size:11px; font-weight: bold; margin-bottom: 6px; display:block;">🚨
+                                style="color: var(--tier1-red); font-size: 11px; font-weight: bold; margin-bottom: 6px; display: block;">🚨
                                 HIGH RISK CLINICAL COMPLAINTS:</span>
                             <label
                                 style="display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:4px;">
@@ -350,7 +350,8 @@
         let CONFIG = {
             HOSPITAL_ID: "HOSP-ROURKELA-01",
             HOSPITAL_NAME: "General City Hospital (Rourkela Node)",
-            API_BASE: "https://triagesystem-ombt.onrender.com/api"
+            // Corrected master endpoint pathing base:
+            API_BASE: "https://triagesystem-ombt.onrender.com/api/triage"
         };
 
         document.getElementById("hospitalTitle").innerText = `🏥 NODE: ${CONFIG.HOSPITAL_NAME}`;
@@ -442,12 +443,12 @@
             }
 
             try {
-                const res = await fetch(`${CONFIG.API_BASE}/triage/admit`, {
+                const res = await fetch(`${CONFIG.API_BASE}/admit`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
                 });
-                if (!res.ok) throw new Error("Server Rejected Entry");
+                if (!res.ok) throw new Error("Server Rejection");
 
                 document.querySelectorAll("input[type='text'], input[type='number']").forEach(i => i.value = "");
                 document.querySelectorAll("input[type='checkbox']").forEach(i => i.checked = false);
@@ -492,7 +493,7 @@
                         if (!payload.name || !payload.age) continue;
 
                         try {
-                            await fetch(`${CONFIG.API_BASE}/triage/admit`, {
+                            await fetch(`${CONFIG.API_BASE}/admit`, {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify(payload)
@@ -512,7 +513,7 @@
 
         async function dischargePatientServer() {
             try {
-                const response = await fetch(`${CONFIG.API_BASE}/triage/discharge`, {
+                const response = await fetch(`${CONFIG.API_BASE}/discharge`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ hospital_id: CONFIG.HOSPITAL_ID })
