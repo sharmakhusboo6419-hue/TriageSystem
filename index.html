@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 Connected Clinical Monitor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #090d16;
+            --surface: #151f32;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #273754;
+            --tier1-red: #ff4a4a;
+            --tier2-amber: #ffb834;
+            --tier3-green: #10b981;
+            --primary-blue: #3b82f6;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 30px 20px;
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        #liveClock {
+            font-family: monospace;
+            font-size: 14px;
+            color: var(--primary-blue);
+            font-weight: bold;
+            background: #0f172a;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 850px) {
+            .layout-grid {
+                grid-template-columns: 380px 1fr;
+            }
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .card h2 {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 16px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .input-group label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        input,
+        select {
+            font-family: inherit;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #0c1220;
+            color: var(--text-primary);
+        }
+
+        button {
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: white;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .btn-danger {
+            background-color: #dc2626;
+            color: white;
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .queue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .patient-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .patient-card {
+            background: #0c1220;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .patient-card.tier-1 {
+            border-left: 5px solid var(--tier1-red);
+        }
+
+        .patient-card.tier-2 {
+            border-left: 5px solid var(--tier2-amber);
+        }
+
+        .patient-card.tier-3 {
+            border-left: 5px solid var(--tier3-green);
+        }
+
+        @keyframes pulseAlert {
+            0% {
+                border-color: var(--border);
+                box-shadow: 0 0 0px transparent;
+            }
+
+            50% {
+                border-color: var(--tier2-amber);
+                box-shadow: 0 0 8px rgba(255, 184, 52, 0.4);
+            }
+
+            100% {
+                border-color: var(--border);
+                box-shadow: 0 0 0px transparent;
+            }
+        }
+
+        .escalated-warn {
+            animation: pulseAlert 2s infinite ease-in-out;
+            background: linear-gradient(135deg, #0c1220 0%, #1a1510 100%) !important;
+        }
+
+        .escalation-badge {
+            background-color: rgba(255, 184, 52, 0.15);
+            color: var(--tier2-amber);
+            border: 1px solid var(--tier2-amber);
+            font-size: 11px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-top: 6px;
+            display: inline-block;
+        }
+
+        .patient-info h3 {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .patient-info p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .badge-1 {
+            background-color: rgba(255, 74, 74, 0.15);
+            color: var(--tier1-red);
+            border: 1px solid var(--tier1-red);
+        }
+
+        .badge-2 {
+            background-color: rgba(255, 184, 52, 0.15);
+            color: var(--tier2-amber);
+            border: 1px solid var(--tier2-amber);
+        }
+
+        .badge-3 {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--tier3-green);
+            border: 1px solid var(--tier3-green);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dashboard">
+        <header>
+            <div>
+                <h1 id="hospitalTitle">🏥 MONITORING NODE: CONNECTING...</h1>
+                <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 14px;">Enterprise Live Network
+                    Triage Matrix</p>
+            </div>
+            <div id="liveClock">00:00:00</div>
+        </header>
+
+        <div class="card" style="margin-bottom: 24px;">
+            <label
+                style="font-size: 11px; font-weight:600; color:var(--text-secondary); text-transform: uppercase;">Switch
+                Live Hospital Instance Connection Node</label>
+            <select id="hospitalSelector" onchange="switchHospitalNode()" style="width:100%; margin-top:8px;">
+                <option value="HOSP-ROURKELA-01|General City Hospital (Rourkela Node)">General City Hospital (Rourkela
+                    Node)</option>
+                <option value="HOSP-BHUBANESWAR-02|AIIMS Hospital (Bhubaneswar Node)">AIIMS Hospital (Bhubaneswar Node)
+                </option>
+            </select>
+        </div>
+
+        <div class="layout-grid">
+            <div class="side-panel">
+                <div class="card">
+                    <h2>Patient Intake Registry</h2>
+                    <div class="form-grid">
+                        <div class="input-group"><label>Patient Name</label><input type="text" id="pName"
+                                placeholder="Name"></div>
+                        <div class="input-group"><label>Age</label><input type="number" id="pAge" placeholder="Years">
+                        </div>
+                        <div class="input-group"><label>Heart Rate</label><input type="number" id="vHR"
+                                placeholder="bpm"></div>
+                        <div class="input-group"><label>Systolic BP</label><input type="number" id="vBP"
+                                placeholder="mmHg"></div>
+                        <div class="input-group"><label>Oxygen Level</label><input type="number" id="vO2"
+                                placeholder="SpO2 %"></div>
+                        <div class="input-group"><label>Respiratory Rate</label><input type="number" id="vRR"
+                                placeholder="/min"></div>
+
+                        <div class="input-group"
+                            style="margin-top: 8px; padding: 10px; background: #0c1220; border-radius: 6px; border: 1px dashed var(--border);">
+                            <label style="color: var(--tier1-red); font-weight: bold; margin-bottom: 6px;">🚨 HIGH RISK
+                                CLINICAL COMPLAINTS:</label>
+                            <label
+                                style="display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:4px;">
+                                <input type="checkbox" id="symChestPain" style="width:auto;"> Crushing Chest Pain
+                            </label>
+                            <label
+                                style="display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:4px;">
+                                <input type="checkbox" id="symStroke" style="width:auto;"> Sudden Numbness/Speech Slur
+                            </label>
+                            <label style="display:flex; align-items:center; gap:8px; font-size:13px;">
+                                <input type="checkbox" id="symTrauma" style="width:auto;"> Active Heavy Trauma/Bleeding
+                            </label>
+                        </div>
+
+                        <button class="btn-primary" onclick="registerPatientServer()">Admit via Network</button>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 24px; border: 1px dashed var(--primary-blue);">
+                    <h2>Bulk Patient Import (.CSV)</h2>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label>Select Triage Spreadsheet File</label>
+                            <input type="file" id="csvFileInput" accept=".csv" style="padding: 8px;">
+                        </div>
+                        <button class="btn-primary" style="background-color: #10b981;" onclick="uploadCSVFile()">⚡
+                            Process & Admit Bulk List</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="queue-header">
+                    <h2 style="margin:0;">Live Managed Stream (Sorted by Priority Rank)</h2>
+                    <button class="btn-danger" onclick="dischargePatientServer()">🚨 Discharge Critical</button>
+                </div>
+                <div id="queueList" class="patient-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <script>
+        let CONFIG = {
+            HOSPITAL_ID: "HOSP-ROURKELA-01",
+            HOSPITAL_NAME: "General City Hospital (Rourkela Node)",
+            API_BASE: "http://localhost:3000/api"
+        };
+
+        document.getElementById("hospitalTitle").innerText = `🏥 NODE: ${CONFIG.HOSPITAL_NAME}`;
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('liveClock').innerText = now.toTimeString().split(' ')[0];
+        }
+        setInterval(updateClock, 1000);
+
+        function switchHospitalNode() {
+            const select = document.getElementById("hospitalSelector");
+            const [id, name] = select.value.split("|");
+            CONFIG.HOSPITAL_ID = id;
+            CONFIG.HOSPITAL_NAME = name;
+            document.getElementById("hospitalTitle").innerText = `🏥 NODE: ${CONFIG.HOSPITAL_NAME}`;
+            syncTriageNetwork();
+        }
+
+        async function syncTriageNetwork() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/triage/${CONFIG.HOSPITAL_ID}`);
+                const queue = await response.json();
+                renderDashboard(queue);
+            } catch (err) {
+                console.error("Network sync failure:", err);
+            }
+        }
+
+        function renderDashboard(queue) {
+            const listContainer = document.getElementById("queueList");
+            listContainer.innerHTML = "";
+
+            if (queue.length === 0) {
+                listContainer.innerHTML = `<div class="empty-state">📟 Queue clear. No active monitoring records.</div>`;
+                return;
+            }
+
+            queue.forEach(p => {
+                const isEscalatedClass = p.is_escalated ? 'escalated-warn' : '';
+
+                listContainer.innerHTML += `
+                <div class="patient-card tier-${p.current_priority} ${isEscalatedClass}">
+                    <div class="patient-info">
+                        <h3>${p.name} <span style="font-weight:400; color:var(--text-secondary); font-size:13px;">(${p.age} yrs)</span></h3>
+                        <p>HR: <b>${p.hr}</b> | BP: <b>${p.bp}</b> | SpO2: <b>${p.o2}%</b> | RR: <b>${p.rr}</b></p>
+                        <p style="font-size: 11px; color: var(--primary-blue); margin-top:4px;">
+                            Wait: <b>${p.minutes_waiting} mins</b> | Base Classification: Tier ${p.base_tier}
+                        </p>
+                        ${p.is_escalated ? `<div class="escalation-badge">⚠️ WAITING LIMIT EXCEEDED - RE-CHECK VITALS</div>` : ''}
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="badge badge-${p.current_priority}">Rank ${p.current_priority}</span>
+                    </div>
+                </div>`;
+            });
+        }
+
+        async function registerPatientServer() {
+            const nameField = document.getElementById("pName");
+            const ageField = document.getElementById("pAge");
+            const hrField = document.getElementById("vHR");
+            const bpField = document.getElementById("vBP");
+            const o2Field = document.getElementById("vO2");
+            const rrField = document.getElementById("vRR");
+
+            const chestPainCheck = document.getElementById("symChestPain");
+            const strokeCheck = document.getElementById("symStroke");
+            const traumaCheck = document.getElementById("symTrauma");
+
+            const payload = {
+                hospital_id: CONFIG.HOSPITAL_ID,
+                name: nameField ? nameField.value.trim() : "",
+                age: ageField ? ageField.value.trim() : "",
+                hr: hrField ? (parseInt(hrField.value) || 0) : 0,
+                bp: bpField ? (parseInt(bpField.value) || 0) : 0,
+                o2: o2Field ? (parseInt(o2Field.value) || 0) : 0,
+                rr: rrField ? (parseInt(rrField.value) || 0) : 0,
+                symptoms: {
+                    chestPain: chestPainCheck ? chestPainCheck.checked : false,
+                    stroke: strokeCheck ? strokeCheck.checked : false,
+                    trauma: traumaCheck ? traumaCheck.checked : false
+                }
+            };
+
+            if (!payload.name || !payload.age) {
+                alert("Biographic data input required. Please enter a valid Patient Name and Age.");
+                return;
+            }
+
+            try {
+                await fetch(`${CONFIG.API_BASE}/triage/admit`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                document.querySelectorAll("input[type='text'], input[type='number']").forEach(i => i.value = "");
+                document.querySelectorAll("input[type='checkbox']").forEach(i => i.checked = false);
+                syncTriageNetwork();
+            } catch (err) {
+                alert("Submission error.");
+            }
+        }
+
+        // CSV Document Local Parser Execution Node Flow Line
+        async function uploadCSVFile() {
+            const fileInput = document.getElementById('csvFileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please select a valid CSV file first.");
+                return;
+            }
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: async function (results) {
+                    const patients = results.data;
+                    let successCount = 0;
+
+                    for (let patient of patients) {
+                        const payload = {
+                            hospital_id: CONFIG.HOSPITAL_ID,
+                            name: patient.name ? patient.name.trim() : "",
+                            age: patient.age ? patient.age.trim() : "",
+                            hr: parseInt(patient.hr) || 0,
+                            bp: parseInt(patient.bp) || 0,
+                            o2: parseInt(patient.o2) || 0,
+                            rr: parseInt(patient.rr) || 0,
+                            symptoms: {
+                                chestPain: patient.chestPain === "true",
+                                stroke: patient.stroke === "true",
+                                trauma: patient.trauma === "true"
+                            }
+                        };
+
+                        if (!payload.name || !payload.age) continue;
+
+                        try {
+                            await fetch(`${CONFIG.API_BASE}/triage/admit`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(payload)
+                            });
+                            successCount++;
+                        } catch (err) {
+                            console.error("Batch stream processing error:", err);
+                        }
+                    }
+
+                    alert(`🎉 Bulk Import Complete! Successfully admitted ${successCount} records into ${CONFIG.HOSPITAL_NAME}.`);
+                    fileInput.value = "";
+                    syncTriageNetwork();
+                }
+            });
+        }
+
+        async function dischargePatientServer() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/triage/discharge`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ hospital_id: CONFIG.HOSPITAL_ID })
+                });
+                const result = await response.json();
+                if (result.error) return alert(result.error);
+
+                alert(`🚨 DISCHARGED:\n${result.patient.name} (ID: ${result.patient.ticket_id})`);
+                syncTriageNetwork();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        setInterval(syncTriageNetwork, 3000);
+        syncTriageNetwork();
+    </script>
+</body>
+
+</html>
