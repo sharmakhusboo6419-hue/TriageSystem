@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏥 Connected Clinical Monitor</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-main: #090d16;
@@ -270,7 +270,7 @@
         </header>
 
         <div class="card" style="margin-bottom: 24px;">
-            <label
+            <label for="hospitalSelector"
                 style="font-size: 11px; font-weight:600; color:var(--text-secondary); text-transform: uppercase;">Switch
                 Live Hospital Instance Connection Node</label>
             <select id="hospitalSelector" onchange="switchHospitalNode()" style="width:100%; margin-top:8px;">
@@ -286,23 +286,24 @@
                 <div class="card">
                     <h2>Patient Intake Registry</h2>
                     <div class="form-grid">
-                        <div class="input-group"><label>Patient Name</label><input type="text" id="pName"
+                        <div class="input-group"><label for="pName">Patient Name</label><input type="text" id="pName"
                                 placeholder="Name"></div>
-                        <div class="input-group"><label>Age</label><input type="number" id="pAge" placeholder="Years">
-                        </div>
-                        <div class="input-group"><label>Heart Rate</label><input type="number" id="vHR"
+                        <div class="input-group"><label for="pAge">Age</label><input type="number" id="pAge"
+                                placeholder="Years"></div>
+                        <div class="input-group"><label for="vHR">Heart Rate</label><input type="number" id="vHR"
                                 placeholder="bpm"></div>
-                        <div class="input-group"><label>Systolic BP</label><input type="number" id="vBP"
+                        <div class="input-group"><label for="vBP">Systolic BP</label><input type="number" id="vBP"
                                 placeholder="mmHg"></div>
-                        <div class="input-group"><label>Oxygen Level</label><input type="number" id="vO2"
+                        <div class="input-group"><label for="vO2">Oxygen Level</label><input type="number" id="vO2"
                                 placeholder="SpO2 %"></div>
-                        <div class="input-group"><label>Respiratory Rate</label><input type="number" id="vRR"
+                        <div class="input-group"><label for="vRR">Respiratory Rate</label><input type="number" id="vRR"
                                 placeholder="/min"></div>
 
                         <div class="input-group"
                             style="margin-top: 8px; padding: 10px; background: #0c1220; border-radius: 6px; border: 1px dashed var(--border);">
-                            <label style="color: var(--tier1-red); font-weight: bold; margin-bottom: 6px;">🚨 HIGH RISK
-                                CLINICAL COMPLAINTS:</label>
+                            <span
+                                style="color: var(--tier1-red); font-size:11px; font-weight: bold; margin-bottom: 6px; display:block;">🚨
+                                HIGH RISK CLINICAL COMPLAINTS:</span>
                             <label
                                 style="display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:4px;">
                                 <input type="checkbox" id="symChestPain" style="width:auto;"> Crushing Chest Pain
@@ -324,7 +325,7 @@
                     <h2>Bulk Patient Import (.CSV)</h2>
                     <div class="form-grid">
                         <div class="input-group">
-                            <label>Select Triage Spreadsheet File</label>
+                            <label for="csvFileInput">Select Triage Spreadsheet File</label>
                             <input type="file" id="csvFileInput" accept=".csv" style="padding: 8px;">
                         </div>
                         <button class="btn-primary" style="background-color: #10b981;" onclick="uploadCSVFile()">⚡
@@ -349,7 +350,7 @@
         let CONFIG = {
             HOSPITAL_ID: "HOSP-ROURKELA-01",
             HOSPITAL_NAME: "General City Hospital (Rourkela Node)",
-            API_BASE: "https://triage-system.onrender.com/api"
+            API_BASE: "https://triagesystem-ombt.onrender.com/api"
         };
 
         document.getElementById("hospitalTitle").innerText = `🏥 NODE: ${CONFIG.HOSPITAL_NAME}`;
@@ -371,7 +372,7 @@
 
         async function syncTriageNetwork() {
             try {
-                const response = await fetch(`${CONFIG.API_BASE}/triage/${CONFIG.HOSPITAL_ID}`);
+                const response = await fetch(`${CONFIG.API_BASE}/${CONFIG.HOSPITAL_ID}`);
                 const queue = await response.json();
                 renderDashboard(queue);
             } catch (err) {
@@ -383,7 +384,7 @@
             const listContainer = document.getElementById("queueList");
             listContainer.innerHTML = "";
 
-            if (queue.length === 0) {
+            if (!queue || queue.length === 0) {
                 listContainer.innerHTML = `<div class="empty-state">📟 Queue clear. No active monitoring records.</div>`;
                 return;
             }
@@ -441,11 +442,12 @@
             }
 
             try {
-                await fetch(`${CONFIG.API_BASE}/triage/admit`, {
+                const res = await fetch(`${CONFIG.API_BASE}/triage/admit`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
                 });
+                if (!res.ok) throw new Error("Server Rejected Entry");
 
                 document.querySelectorAll("input[type='text'], input[type='number']").forEach(i => i.value = "");
                 document.querySelectorAll("input[type='checkbox']").forEach(i => i.checked = false);
@@ -455,7 +457,6 @@
             }
         }
 
-        // CSV Document Local Parser Execution Node Flow Line
         async function uploadCSVFile() {
             const fileInput = document.getElementById('csvFileInput');
             const file = fileInput.files[0];
@@ -526,7 +527,7 @@
             }
         }
 
-        setInterval(syncTriageNetwork, 3000);
+        setInterval(syncTriageNetwork, 4000);
         syncTriageNetwork();
     </script>
 </body>
