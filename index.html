@@ -4,532 +4,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏥 Connected Clinical Monitor</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-main: #090d16;
-            --surface: #151f32;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --border: #273754;
-            --tier1-red: #ff4a4a;
-            --tier2-amber: #ffb834;
-            --tier3-green: #10b981;
-            --primary-blue: #3b82f6;
-            --radius: 12px;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-primary);
-            margin: 0;
-            padding: 30px 20px;
-        }
-
-        .dashboard {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 2px solid var(--border);
-        }
-
-        header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            margin: 0;
-        }
-
-        #liveClock {
-            font-family: monospace;
-            font-size: 14px;
-            color: var(--primary-blue);
-            font-weight: bold;
-            background: #0f172a;
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-        }
-
-        .layout-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 24px;
-        }
-
-        @media (min-width: 850px) {
-            .layout-grid {
-                grid-template-columns: 380px 1fr;
-            }
-        }
-
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-        }
-
-        .card h2 {
-            font-size: 14px;
-            font-weight: 600;
-            margin: 0 0 16px 0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-secondary);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .input-group label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        input,
-        select {
-            font-family: inherit;
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-            background-color: #0c1220;
-            color: var(--text-primary);
-        }
-
-        button {
-            font-family: inherit;
-            font-size: 14px;
-            font-weight: 600;
-            padding: 12px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-blue);
-            color: white;
-            width: 100%;
-            margin-top: 8px;
-        }
-
-        .btn-danger {
-            background-color: #dc2626;
-            color: white;
-            padding: 6px 12px;
-            font-size: 13px;
-        }
-
-        .queue-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .patient-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .patient-card {
-            background: #0c1220;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .patient-card.tier-1 {
-            border-left: 5px solid var(--tier1-red);
-        }
-
-        .patient-card.tier-2 {
-            border-left: 5px solid var(--tier2-amber);
-        }
-
-        .patient-card.tier-3 {
-            border-left: 5px solid var(--tier3-green);
-        }
-
-        @keyframes pulseAlert {
-            0% {
-                border-color: var(--border);
-                box-shadow: 0 0 0px transparent;
-            }
-
-            50% {
-                border-color: var(--tier2-amber);
-                box-shadow: 0 0 8px rgba(255, 184, 52, 0.4);
-            }
-
-            100% {
-                border-color: var(--border);
-                box-shadow: 0 0 0px transparent;
-            }
-        }
-
-        .escalated-warn {
-            animation: pulseAlert 2s infinite ease-in-out;
-            background: linear-gradient(135deg, #0c1220 0%, #1a1510 100%) !important;
-        }
-
-        .escalation-badge {
-            background-color: rgba(255, 184, 52, 0.15);
-            color: var(--tier2-amber);
-            border: 1px solid var(--tier2-amber);
-            font-size: 11px;
-            font-weight: bold;
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin-top: 6px;
-            display: inline-block;
-        }
-
-        .patient-info h3 {
-            margin: 0 0 4px 0;
-            font-size: 15px;
-            font-weight: 600;
-        }
-
-        .patient-info p {
-            margin: 0;
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .badge {
-            font-size: 11px;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 4px;
-            display: inline-block;
-        }
-
-        .badge-1 {
-            background-color: rgba(255, 74, 74, 0.15);
-            color: var(--tier1-red);
-            border: 1px solid var(--tier1-red);
-        }
-
-        .badge-2 {
-            background-color: rgba(255, 184, 52, 0.15);
-            color: var(--tier2-amber);
-            border: 1px solid var(--tier2-amber);
-        }
-
-        .badge-3 {
-            background-color: rgba(16, 185, 129, 0.15);
-            color: var(--tier3-green);
-            border: 1px solid var(--tier3-green);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-    </style>
+    <title>Connected Clinical Monitor - Triage Matrix</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
 
-<body>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
 
-    <div class="dashboard">
-        <header>
-            <div>
-                <h1 id="hospitalTitle">🏥 MONITORING NODE: CONNECTING...</h1>
-                <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 14px;">Enterprise Live Network
-                    Triage Matrix</p>
-            </div>
-            <div id="liveClock">00:00:00</div>
-        </header>
-
-        <div class="card" style="margin-bottom: 24px;">
-            <label for="hospitalSelector"
-                style="font-size: 11px; font-weight:600; color:var(--text-secondary); text-transform: uppercase;">Switch
-                Live Hospital Instance Connection Node</label>
-            <select id="hospitalSelector" onchange="switchHospitalNode()" style="width:100%; margin-top:8px;">
-                <option value="HOSP-ROURKELA-01|General City Hospital (Rourkela Node)">General City Hospital (Rourkela
-                    Node)</option>
-                <option value="HOSP-BHUBANESWAR-02|AIIMS Hospital (Bhubaneswar Node)">AIIMS Hospital (Bhubaneswar Node)
-                </option>
-            </select>
+    <header class="border-b border-slate-800 bg-slate-950/50 backdrop-blur px-6 py-4 flex justify-between items-center">
+        <div>
+            <h1 class="text-xl font-bold tracking-tight text-blue-400 flex items-center gap-2">
+                🏥 NODE: General City Hospital (Rourkela Node)
+            </h1>
+            <p class="text-xs text-slate-400 mt-0.5">Enterprise Live Network Triage Matrix</p>
         </div>
-
-        <div class="layout-grid">
-            <div class="side-panel">
-                <div class="card">
-                    <h2>Patient Intake Registry</h2>
-                    <div class="form-grid">
-                        <div class="input-group"><label for="pName">Patient Name</label><input type="text" id="pName"
-                                placeholder="Name"></div>
-                        <div class="input-group"><label for="pAge">Age</label><input type="number" id="pAge"
-                                placeholder="Years"></div>
-                        <div class="input-group"><label for="vHR">Heart Rate</label><input type="number" id="vHR"
-                                placeholder="bpm"></div>
-                        <div class="input-group"><label for="vBP">Systolic BP</label><input type="number" id="vBP"
-                                placeholder="mmHg"></div>
-                        <div class="input-group"><label for="vO2">Oxygen Level</label><input type="number" id="vO2"
-                                placeholder="SpO2 %"></div>
-                        <div class="input-group"><label for="vRR">Respiratory Rate</label><input type="number" id="vRR"
-                                placeholder="/min"></div>
-
-                        <div class="input-group"
-                            style="margin-top: 8px; padding: 10px; background: #0c1220; border-radius: 6px; border: 1px dashed var(--border);">
-                            <span
-                                style="color: var(--tier1-red); font-size: 11px; font-weight: bold; margin-bottom: 6px; display: block;">🚨
-                                HIGH RISK CLINICAL COMPLAINTS:</span>
-                            <label
-                                style="display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:4px;">
-                                <input type="checkbox" id="symChestPain" style="width:auto;"> Crushing Chest Pain
-                            </label>
-                            <label
-                                style="display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:4px;">
-                                <input type="checkbox" id="symStroke" style="width:auto;"> Sudden Numbness/Speech Slur
-                            </label>
-                            <label style="display:flex; align-items:center; gap:8px; font-size:13px;">
-                                <input type="checkbox" id="symTrauma" style="width:auto;"> Active Heavy Trauma/Bleeding
-                            </label>
-                        </div>
-
-                        <button class="btn-primary" onclick="registerPatientServer()">Admit via Network</button>
-                    </div>
-                </div>
-
-                <div class="card" style="margin-top: 24px; border: 1px dashed var(--primary-blue);">
-                    <h2>Bulk Patient Import (.CSV)</h2>
-                    <div class="form-grid">
-                        <div class="input-group">
-                            <label for="csvFileInput">Select Triage Spreadsheet File</label>
-                            <input type="file" id="csvFileInput" accept=".csv" style="padding: 8px;">
-                        </div>
-                        <button class="btn-primary" style="background-color: #10b981;" onclick="uploadCSVFile()">⚡
-                            Process & Admit Bulk List</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="queue-header">
-                    <h2 style="margin:0;">Live Managed Stream (Sorted by Priority Rank)</h2>
-                    <button class="btn-danger" onclick="dischargePatientServer()">🚨 Discharge Critical</button>
-                </div>
-                <div id="queueList" class="patient-list"></div>
-            </div>
+        <div class="flex items-center gap-3">
+            <span class="relative flex h-3 w-3">
+                <span
+                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </span>
+            <span class="text-xs font-mono text-emerald-400">Live Network Active</span>
         </div>
-    </div>
+    </header>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <main class="max-w-7xl mx-auto p-6 space-y-8">
+
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div class="bg-slate-950/40 border border-slate-800/80 rounded-xl p-6 backdrop-blur">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">Admit via Network Form
+                </h2>
+                <div class="space-y-4">
+                    <button id="btnFakeSubmit"
+                        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 px-4 rounded-lg transition-colors shadow-lg shadow-blue-500/10 cursor-pointer text-sm">
+                        Simulate Single Patient Admission Form
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-950/40 border border-slate-800/80 rounded-xl p-6 backdrop-blur">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-2">Bulk Patient Import
+                    (.CSV)</h2>
+                <p class="text-xs text-slate-400 mb-4">Upload any triage data. The parser dynamically aligns
+                    non-standard headers.</p>
+
+                <label
+                    class="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-lg p-4 cursor-pointer transition-colors group bg-slate-900/30">
+                    <span class="text-sm text-slate-300 group-hover:text-blue-400 font-medium mb-1">Click to select CSV
+                        File</span>
+                    <span class="text-xs text-slate-500">Accepts any formatted sheet layout</span>
+                    <input type="file" id="csvFileInput" accept=".csv" class="hidden" />
+                </label>
+            </div>
+
+        </section>
+
+        <section class="bg-slate-950/40 border border-slate-800/80 rounded-xl overflow-hidden backdrop-blur shadow-xl">
+            <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/20">
+                <h2 class="font-semibold text-slate-200 tracking-tight">Live Managed Stream (Screen Real-Time Rank)</h2>
+                <div
+                    class="bg-slate-800 text-slate-300 font-mono text-xs px-2.5 py-1 rounded-md border border-slate-700">
+                    Total In Queue: <span id="queueCounter" class="text-blue-400 font-bold">0</span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr
+                            class="border-b border-slate-800 bg-slate-900/40 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                            <th class="py-3 px-6">Patient ID</th>
+                            <th class="py-3 px-6">Name</th>
+                            <th class="py-3 px-6">Age / Sex</th>
+                            <th class="py-3 px-6">Symptoms</th>
+                            <th class="py-3 px-6">Triage Level</th>
+                            <th class="py-3 px-6 text-right">Operational Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patientStreamTarget" class="divide-y divide-slate-800/50 text-sm font-medium">
+                        <tr id="emptyRowPlaceholder">
+                            <td colspan="6" class="py-12 text-center text-slate-500 text-xs tracking-wide">
+                                No records active in matrix stream. Upload a CSV or simulate entry to initiate.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
 
     <script>
-        let CONFIG = {
-            HOSPITAL_ID: "HOSP-ROURKELA-01",
-            HOSPITAL_NAME: "General City Hospital (Rourkela Node)",
-            // Corrected master endpoint pathing base:
-            API_BASE: "https://triagesystem-ombt.onrender.com/api/triage"
-        };
+        // Array holding the active client-side datastream state
+        let patientQueue = [];
 
-        document.getElementById("hospitalTitle").innerText = `🏥 NODE: ${CONFIG.HOSPITAL_NAME}`;
+        // DOM elements cache
+        const csvInput = document.getElementById('csvFileInput');
+        const streamTarget = document.getElementById('patientStreamTarget');
+        const queueCounter = document.getElementById('queueCounter');
+        const emptyPlaceholder = document.getElementById('emptyRowPlaceholder');
+        const btnFakeSubmit = document.getElementById('btnFakeSubmit');
 
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('liveClock').innerText = now.toTimeString().split(' ')[0];
-        }
-        setInterval(updateClock, 1000);
-
-        function switchHospitalNode() {
-            const select = document.getElementById("hospitalSelector");
-            const [id, name] = select.value.split("|");
-            CONFIG.HOSPITAL_ID = id;
-            CONFIG.HOSPITAL_NAME = name;
-            document.getElementById("hospitalTitle").innerText = `🏥 NODE: ${CONFIG.HOSPITAL_NAME}`;
-            syncTriageNetwork();
-        }
-
-        async function syncTriageNetwork() {
-            try {
-                const response = await fetch(`${CONFIG.API_BASE}/${CONFIG.HOSPITAL_ID}`);
-                const queue = await response.json();
-                renderDashboard(queue);
-            } catch (err) {
-                console.error("Network sync failure:", err);
-            }
-        }
-
-        function renderDashboard(queue) {
-            const listContainer = document.getElementById("queueList");
-            listContainer.innerHTML = "";
-
-            if (!queue || queue.length === 0) {
-                listContainer.innerHTML = `<div class="empty-state">📟 Queue clear. No active monitoring records.</div>`;
+        // Render stream visual components to UI matrix
+        function updateLiveStreamUI() {
+            if (patientQueue.length === 0) {
+                emptyPlaceholder.style.display = 'table-row';
+                queueCounter.textContent = '0';
                 return;
             }
 
-            queue.forEach(p => {
-                const isEscalatedClass = p.is_escalated ? 'escalated-warn' : '';
+            emptyPlaceholder.style.display = 'none';
+            queueCounter.textContent = patientQueue.length;
 
-                listContainer.innerHTML += `
-                <div class="patient-card tier-${p.current_priority} ${isEscalatedClass}">
-                    <div class="patient-info">
-                        <h3>${p.name} <span style="font-weight:400; color:var(--text-secondary); font-size:13px;">(${p.age} yrs)</span></h3>
-                        <p>HR: <b>${p.hr}</b> | BP: <b>${p.bp}</b> | SpO2: <b>${p.o2}%</b> | RR: <b>${p.rr}</b></p>
-                        <p style="font-size: 11px; color: var(--primary-blue); margin-top:4px;">
-                            Wait: <b>${p.minutes_waiting} mins</b> | Base Classification: Tier ${p.base_tier}
-                        </p>
-                        ${p.is_escalated ? `<div class="escalation-badge">⚠️ WAITING LIMIT EXCEEDED - RE-CHECK VITALS</div>` : ''}
-                    </div>
-                    <div style="text-align: right;">
-                        <span class="badge badge-${p.current_priority}">Rank ${p.current_priority}</span>
-                    </div>
-                </div>`;
+            // Clear previous elements except the hidden placeholder
+            const rowsToRemove = streamTarget.querySelectorAll('tr:not(#emptyRowPlaceholder)');
+            rowsToRemove.forEach(row => row.remove());
+
+            // Build out clean rows
+            patientQueue.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-900/30 transition-colors duration-150 border-b border-slate-800/30";
+
+                // Map specific badge colors dynamically based on Tier rating strings
+                let tierBadgeClass = "bg-slate-800 text-slate-300";
+                if (p.Triage_Tier.toLowerCase().includes('1') || p.Triage_Tier.toLowerCase().includes('resuscitation')) {
+                    tierBadgeClass = "bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                } else if (p.Triage_Tier.toLowerCase().includes('3') || p.Triage_Tier.toLowerCase().includes('urgent')) {
+                    tierBadgeClass = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                } else {
+                    tierBadgeClass = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                }
+
+                tr.innerHTML = `
+                    <td class="py-4 px-6 font-mono text-xs text-blue-400">${p.Patient_ID}</td>
+                    <td class="py-4 px-6 text-slate-200">${p.Patient_Name}</td>
+                    <td class="py-4 px-6 text-slate-400 text-xs">${p.Age} Yrs / ${p.Gender}</td>
+                    <td class="py-4 px-6 text-slate-300 text-xs max-w-xs truncate" title="${p.Symptoms}">${p.Symptoms}</td>
+                    <td class="py-4 px-6"><span class="px-2.5 py-1 rounded text-xs font-semibold ${tierBadgeClass}">${p.Triage_Tier}</span></td>
+                    <td class="py-4 px-6 text-right text-xs font-mono text-slate-400">${p.Status}</td>
+                `;
+                streamTarget.appendChild(tr);
             });
         }
 
-        async function registerPatientServer() {
-            const nameField = document.getElementById("pName");
-            const ageField = document.getElementById("pAge");
-            const hrField = document.getElementById("vHR");
-            const bpField = document.getElementById("vBP");
-            const o2Field = document.getElementById("vO2");
-            const rrField = document.getElementById("vRR");
+        // --- SMART CSV INTERFACE LOGIC ---
+        function smartParseCSV(rawArrayRows) {
+            if (!rawArrayRows || rawArrayRows.length === 0) return [];
 
-            const chestPainCheck = document.getElementById("symChestPain");
-            const strokeCheck = document.getElementById("symStroke");
-            const traumaCheck = document.getElementById("symTrauma");
+            // Pull standard top level field keys from whatever file is loaded
+            const fileHeaders = Object.keys(rawArrayRows[0]);
 
-            const payload = {
-                hospital_id: CONFIG.HOSPITAL_ID,
-                name: nameField ? nameField.value.trim() : "",
-                age: ageField ? ageField.value.trim() : "",
-                hr: hrField ? (parseInt(hrField.value) || 0) : 0,
-                bp: bpField ? (parseInt(bpField.value) || 0) : 0,
-                o2: o2Field ? (parseInt(o2Field.value) || 0) : 0,
-                rr: rrField ? (parseInt(rrField.value) || 0) : 0,
-                symptoms: {
-                    chestPain: chestPainCheck ? chestPainCheck.checked : false,
-                    stroke: strokeCheck ? strokeCheck.checked : false,
-                    trauma: traumaCheck ? traumaCheck.checked : false
-                }
+            // Fuzzy string validation helper matches criteria despite casings, underscores, or prefixes
+            const discoverTargetColumn = (alternativeTerms) => {
+                return fileHeaders.find(header =>
+                    alternativeTerms.some(term =>
+                        header.toLowerCase().replace(/[^a-z0-9]/g, '') === term.toLowerCase().replace(/[^a-z0-9]/g, '')
+                    )
+                );
             };
 
-            if (!payload.name || !payload.age) {
-                alert("Biographic data input required. Please enter a valid Patient Name and Age.");
-                return;
-            }
+            // Locate headers adaptively
+            const keyID = discoverTargetColumn(['Patient_ID', 'id', 'pid', 'patientid', 'pt_id']);
+            const keyName = discoverTargetColumn(['Patient_Name', 'name', 'pname', 'patientname', 'full_name', 'patient_name']);
+            const keyAge = discoverTargetColumn(['Age', 'age', 'patient_age', 'years']);
+            const keyGender = discoverTargetColumn(['Gender', 'gender', 'sex', 'm_f']);
+            const keySymptoms = discoverTargetColumn(['Symptoms', 'symptoms', 'condition', 'symptom', 'problems']);
+            const keyTier = discoverTargetColumn(['Triage_Tier', 'triage_tier', 'tier', 'priority', 'triage_level', 'level']);
+            const keyStatus = discoverTargetColumn(['Status', 'status', 'state', 'stage']);
 
-            try {
-                const res = await fetch(`${CONFIG.API_BASE}/admit`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-                if (!res.ok) throw new Error("Server Rejection");
-
-                document.querySelectorAll("input[type='text'], input[type='number']").forEach(i => i.value = "");
-                document.querySelectorAll("input[type='checkbox']").forEach(i => i.checked = false);
-                syncTriageNetwork();
-            } catch (err) {
-                alert("Submission error.");
-            }
+            // Build clean database-ready format array using extracted structure pointers
+            return rawArrayRows.map(row => {
+                return {
+                    Patient_ID: row[keyID] || `PT-${Math.floor(Math.random() * 9000 + 1000)}`,
+                    Patient_Name: row[keyName] || 'Anonymous Intake',
+                    Age: row[keyAge] || 'N/A',
+                    Gender: row[keyGender] || 'N/A',
+                    Symptoms: row[keySymptoms] || 'No clinical indications logged',
+                    Triage_Tier: row[keyTier] || 'Tier 5 - Non-Urgent',
+                    Status: row[keyStatus] || 'Awaiting Allocation'
+                };
+            });
         }
 
-        async function uploadCSVFile() {
-            const fileInput = document.getElementById('csvFileInput');
-            const file = fileInput.files[0];
-
-            if (!file) {
-                alert("Please select a valid CSV file first.");
-                return;
-            }
+        // Handle uploaded local file interaction streams
+        csvInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
             Papa.parse(file, {
                 header: true,
                 skipEmptyLines: true,
-                complete: async function (results) {
-                    const patients = results.data;
-                    let successCount = 0;
+                complete: function (results) {
+                    console.log("Raw CSV Structure Received:", results.data);
 
-                    for (let patient of patients) {
-                        const payload = {
-                            hospital_id: CONFIG.HOSPITAL_ID,
-                            name: patient.name ? patient.name.trim() : "",
-                            age: patient.age ? patient.age.trim() : "",
-                            hr: parseInt(patient.hr) || 0,
-                            bp: parseInt(patient.bp) || 0,
-                            o2: parseInt(patient.o2) || 0,
-                            rr: parseInt(patient.rr) || 0,
-                            symptoms: {
-                                chestPain: patient.chestPain === "true",
-                                stroke: patient.stroke === "true",
-                                trauma: patient.trauma === "true"
-                            }
-                        };
+                    // Route through automated structure mapper mapping block
+                    const mappedData = smartParseCSV(results.data);
 
-                        if (!payload.name || !payload.age) continue;
+                    // Merge cleanly into user UI datastream cache array
+                    patientQueue = [...patientQueue, ...mappedData];
+                    updateLiveStreamUI();
 
-                        try {
-                            await fetch(`${CONFIG.API_BASE}/admit`, {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify(payload)
-                            });
-                            successCount++;
-                        } catch (err) {
-                            console.error("Batch stream processing error:", err);
-                        }
-                    }
+                    // Alert presentation confirmations
+                    alert(`🎉 Bulk Import Complete! Successfully admitted ${mappedData.length} records into General City Hospital (Rourkela Node).`);
 
-                    alert(`🎉 Bulk Import Complete! Successfully admitted ${successCount} records into ${CONFIG.HOSPITAL_NAME}.`);
-                    fileInput.value = "";
-                    syncTriageNetwork();
+                    // Reset value so user can upload same file if editing on the fly
+                    csvInput.value = '';
+                },
+                error: function (err) {
+                    alert("Unable to parse CSV structure. Verify formatting contents.");
+                    console.error(err);
                 }
             });
-        }
+        });
 
-        async function dischargePatientServer() {
-            try {
-                const response = await fetch(`${CONFIG.API_BASE}/discharge`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ hospital_id: CONFIG.HOSPITAL_ID })
-                });
-                const result = await response.json();
-                if (result.error) return alert(result.error);
-
-                alert(`🚨 DISCHARGED:\n${result.patient.name} (ID: ${result.patient.ticket_id})`);
-                syncTriageNetwork();
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        setInterval(syncTriageNetwork, 4000);
-        syncTriageNetwork();
+        // Optional Single Action Form Mockup helper triggering
+        btnFakeSubmit.addEventListener('click', () => {
+            const mockIntake = [{
+                Patient_ID: `PT-${Math.floor(Math.random() * 899 + 100)}`,
+                Patient_Name: "Khusboo Sharma",
+                Age: "21",
+                Gender: "Female",
+                Symptoms: "Simulated structural check. Real-time data pipeline functional.",
+                Triage_Tier: "Tier 3 - Urgent",
+                Status: "In Progress"
+            }];
+            patientQueue = [...patientQueue, ...mockIntake];
+            updateLiveStreamUI();
+        });
     </script>
 </body>
 
