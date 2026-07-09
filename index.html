@@ -75,8 +75,8 @@
                         <tr
                             class="border-b border-slate-800 bg-slate-900/40 text-xs font-semibold uppercase tracking-wider text-slate-400">
                             <th class="py-3 px-6">Patient ID</th>
-                            <th class="py-3 px-6">Name</th>
-                            <th class="py-3 px-6">Age / Sex</th>
+                            <th class="py-3 px-6">Name & Age</th>
+                            <th class="py-3 px-6">Patient Vitals Diagnostics</th>
                             <th class="py-3 px-6">Symptoms</th>
                             <th class="py-3 px-6">Triage Level</th>
                             <th class="py-3 px-6 text-right">Operational Status</th>
@@ -96,17 +96,14 @@
     </main>
 
     <script>
-        // Array holding the active client-side datastream state
         let patientQueue = [];
 
-        // DOM elements cache
         const csvInput = document.getElementById('csvFileInput');
         const streamTarget = document.getElementById('patientStreamTarget');
         const queueCounter = document.getElementById('queueCounter');
         const emptyPlaceholder = document.getElementById('emptyRowPlaceholder');
         const btnFakeSubmit = document.getElementById('btnFakeSubmit');
 
-        // Render stream visual components to UI matrix
         function updateLiveStreamUI() {
             if (patientQueue.length === 0) {
                 emptyPlaceholder.style.display = 'table-row';
@@ -117,16 +114,13 @@
             emptyPlaceholder.style.display = 'none';
             queueCounter.textContent = patientQueue.length;
 
-            // Clear previous elements except the hidden placeholder
             const rowsToRemove = streamTarget.querySelectorAll('tr:not(#emptyRowPlaceholder)');
             rowsToRemove.forEach(row => row.remove());
 
-            // Build out clean rows
             patientQueue.forEach(p => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-900/30 transition-colors duration-150 border-b border-slate-800/30";
 
-                // Map specific badge colors dynamically based on Tier rating strings
                 let tierBadgeClass = "bg-slate-800 text-slate-300";
                 if (p.Triage_Tier.toLowerCase().includes('1') || p.Triage_Tier.toLowerCase().includes('resuscitation')) {
                     tierBadgeClass = "bg-rose-500/10 text-rose-400 border border-rose-500/20";
@@ -136,10 +130,24 @@
                     tierBadgeClass = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
                 }
 
+                // Format a clean string layout for blood pressure metrics
+                const bpDisplay = (p.Systolic_BP && p.Diastolic_BP) ? `${p.Systolic_BP}/${p.Diastolic_BP} mmHg` : 'N/A';
+                const spo2Display = p.SpO2 ? `${p.SpO2}%` : 'N/A';
+                const hrDisplay = p.Heart_Rate ? `${p.Heart_Rate} BPM` : 'N/A';
+
                 tr.innerHTML = `
                     <td class="py-4 px-6 font-mono text-xs text-blue-400">${p.Patient_ID}</td>
-                    <td class="py-4 px-6 text-slate-200">${p.Patient_Name}</td>
-                    <td class="py-4 px-6 text-slate-400 text-xs">${p.Age} Yrs / ${p.Gender}</td>
+                    <td class="py-4 px-6">
+                        <div class="text-slate-200 font-semibold">${p.Patient_Name}</div>
+                        <div class="text-slate-400 text-xs mt-0.5">${p.Age} Yrs / ${p.Gender}</div>
+                    </td>
+                    <td class="py-4 px-6">
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <span class="bg-slate-800/60 px-2 py-0.5 rounded text-slate-300">💓 HR: <strong class="text-slate-100">${hrDisplay}</strong></span>
+                            <span class="bg-slate-800/60 px-2 py-0.5 rounded text-slate-300">🫁 SpO₂: <strong class="text-slate-100">${spo2Display}</strong></span>
+                            <span class="bg-slate-800/60 px-2 py-0.5 rounded text-slate-300">🩸 BP: <strong class="text-slate-100">${bpDisplay}</strong></span>
+                        </div>
+                    </td>
                     <td class="py-4 px-6 text-slate-300 text-xs max-w-xs truncate" title="${p.Symptoms}">${p.Symptoms}</td>
                     <td class="py-4 px-6"><span class="px-2.5 py-1 rounded text-xs font-semibold ${tierBadgeClass}">${p.Triage_Tier}</span></td>
                     <td class="py-4 px-6 text-right text-xs font-mono text-slate-400">${p.Status}</td>
@@ -148,14 +156,11 @@
             });
         }
 
-        // --- SMART CSV INTERFACE LOGIC ---
         function smartParseCSV(rawArrayRows) {
             if (!rawArrayRows || rawArrayRows.length === 0) return [];
 
-            // Pull standard top level field keys from whatever file is loaded
             const fileHeaders = Object.keys(rawArrayRows[0]);
 
-            // Fuzzy string validation helper matches criteria despite casings, underscores, or prefixes
             const discoverTargetColumn = (alternativeTerms) => {
                 return fileHeaders.find(header =>
                     alternativeTerms.some(term =>
@@ -164,16 +169,20 @@
                 );
             };
 
-            // Locate headers adaptively
-            const keyID = discoverTargetColumn(['Patient_ID', 'id', 'pid', 'patientid', 'pt_id']);
-            const keyName = discoverTargetColumn(['Patient_Name', 'name', 'pname', 'patientname', 'full_name', 'patient_name']);
-            const keyAge = discoverTargetColumn(['Age', 'age', 'patient_age', 'years']);
-            const keyGender = discoverTargetColumn(['Gender', 'gender', 'sex', 'm_f']);
-            const keySymptoms = discoverTargetColumn(['Symptoms', 'symptoms', 'condition', 'symptom', 'problems']);
-            const keyTier = discoverTargetColumn(['Triage_Tier', 'triage_tier', 'tier', 'priority', 'triage_level', 'level']);
-            const keyStatus = discoverTargetColumn(['Status', 'status', 'state', 'stage']);
+            const keyID = discoverTargetColumn(['Patient_ID', 'id', 'pid', 'patientid']);
+            const keyName = discoverTargetColumn(['Patient_Name', 'name', 'pname', 'patientname', 'full_name']);
+            const keyAge = discoverTargetColumn(['Age', 'age', 'patient_age']);
+            const keyGender = discoverTargetColumn(['Gender', 'gender', 'sex']);
+            const keySymptoms = discoverTargetColumn(['Symptoms', 'symptoms', 'condition', 'symptom']);
+            const keyTier = discoverTargetColumn(['Triage_Tier', 'tier', 'priority', 'triage_level']);
+            const keyStatus = discoverTargetColumn(['Status', 'status']);
 
-            // Build clean database-ready format array using extracted structure pointers
+            // NEW: Capture vitals headers from the uploaded file
+            const keySysBP = discoverTargetColumn(['Systolic_BP', 'systolic', 'sys_bp', 'bp_sys']);
+            const keyDiaBP = discoverTargetColumn(['Diastolic_BP', 'diastolic', 'dia_bp', 'bp_dia']);
+            const keyHR = discoverTargetColumn(['Heart_Rate_BPM', 'heart_rate', 'hr', 'bpm', 'pulse']);
+            const keySpO2 = discoverTargetColumn(['SpO2_Percentage', 'spo2', 'oxygen', 'o2', 'spo2_percentage']);
+
             return rawArrayRows.map(row => {
                 return {
                     Patient_ID: row[keyID] || `PT-${Math.floor(Math.random() * 9000 + 1000)}`,
@@ -182,12 +191,16 @@
                     Gender: row[keyGender] || 'N/A',
                     Symptoms: row[keySymptoms] || 'No clinical indications logged',
                     Triage_Tier: row[keyTier] || 'Tier 5 - Non-Urgent',
-                    Status: row[keyStatus] || 'Awaiting Allocation'
+                    Status: row[keyStatus] || 'Awaiting Allocation',
+                    // Save vitals data metrics into the array element
+                    Systolic_BP: row[keySysBP] || null,
+                    Diastolic_BP: row[keyDiaBP] || null,
+                    Heart_Rate: row[keyHR] || null,
+                    SpO2: row[keySpO2] || null
                 };
             });
         }
 
-        // Handle uploaded local file interaction streams
         csvInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -196,29 +209,15 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function (results) {
-                    console.log("Raw CSV Structure Received:", results.data);
-
-                    // Route through automated structure mapper mapping block
                     const mappedData = smartParseCSV(results.data);
-
-                    // Merge cleanly into user UI datastream cache array
                     patientQueue = [...patientQueue, ...mappedData];
                     updateLiveStreamUI();
-
-                    // Alert presentation confirmations
-                    alert(`🎉 Bulk Import Complete! Successfully admitted ${mappedData.length} records into General City Hospital (Rourkela Node).`);
-
-                    // Reset value so user can upload same file if editing on the fly
+                    alert(`🎉 Bulk Import Complete! Admitted ${mappedData.length} records.`);
                     csvInput.value = '';
-                },
-                error: function (err) {
-                    alert("Unable to parse CSV structure. Verify formatting contents.");
-                    console.error(err);
                 }
             });
         });
 
-        // Optional Single Action Form Mockup helper triggering
         btnFakeSubmit.addEventListener('click', () => {
             const mockIntake = [{
                 Patient_ID: `PT-${Math.floor(Math.random() * 899 + 100)}`,
@@ -227,7 +226,11 @@
                 Gender: "Female",
                 Symptoms: "Simulated structural check. Real-time data pipeline functional.",
                 Triage_Tier: "Tier 3 - Urgent",
-                Status: "In Progress"
+                Status: "In Progress",
+                Systolic_BP: 120,
+                Diastolic_BP: 80,
+                Heart_Rate: 72,
+                SpO2: 98
             }];
             patientQueue = [...patientQueue, ...mockIntake];
             updateLiveStreamUI();
