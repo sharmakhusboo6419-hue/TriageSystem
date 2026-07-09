@@ -217,25 +217,43 @@
                 }
             });
         });
-
         btnFakeSubmit.addEventListener('click', () => {
+            // Arrays of random clinical data for realistic presentation simulations
+            const mockNames = ["Aarav Mehta", "Ishita Sharma", "Rohan Patel", "Sneha Rao", "Kabir Verma", "Meera Das", "Vikram Malhotra"];
+            const mockGenders = ["Male", "Female"];
+            const mockSymptoms = [
+                "Acute dyspnea with mild chest discomfort.",
+                "Persistent high fever accompanied by a dry cough.",
+                "Severe abdominal pain radiating to the lower back.",
+                "Slight dizziness and localized minor lacerations.",
+                "Sudden hypertensive crisis with a severe headache."
+            ];
+            const mockTiers = ["Tier 1 - Resuscitation", "Tier 3 - Urgent", "Tier 4 - Less Urgent"];
+            const mockStatuses = ["In Progress", "Awaiting Doctor", "In Triage"];
+
+            // Pick a random element from each array
+            const randomName = mockNames[Math.floor(Math.random() * mockNames.length)];
+            const randomGender = mockGenders[Math.floor(Math.random() * mockGenders.length)];
+            const randomSymptom = mockSymptoms[Math.floor(Math.random() * mockSymptoms.length)];
+            const randomTier = mockTiers[Math.floor(Math.random() * mockTiers.length)];
+            const randomStatus = mockStatuses[Math.floor(Math.random() * mockStatuses.length)];
+            const randomAge = Math.floor(Math.random() * 65) + 18; // Ages between 18 and 83
+
             const mockIntake = [{
                 Patient_ID: `PT-${Math.floor(Math.random() * 899 + 100)}`,
-                Patient_Name: "Khusboo Sharma",
-                Age: "21",
-                Gender: "Female",
-                Symptoms: "Simulated structural check. Real-time data pipeline functional.",
-                Triage_Tier: "Tier 3 - Urgent",
-                Status: "In Progress",
-                Systolic_BP: 120,
-                Diastolic_BP: 80,
-                Heart_Rate: 72,
-                SpO2: 98
+                Patient_Name: randomName,
+                Age: randomAge.toString(),
+                Gender: randomGender,
+                Symptoms: randomSymptom,
+                Triage_Tier: randomTier,
+                Status: randomStatus,
+                Systolic_BP: Math.floor(Math.random() * 50) + 110,  // 110 - 160
+                Diastolic_BP: Math.floor(Math.random() * 30) + 70,  // 70 - 100
+                Heart_Rate: Math.floor(Math.random() * 40) + 65,    // 65 - 105
+                SpO2: Math.floor(Math.random() * 10) + 90           // 90 - 100
             }];
+
             patientQueue = [...patientQueue, ...mockIntake];
             updateLiveStreamUI();
         });
-    </script>
-</body>
-
-</html>
+    
