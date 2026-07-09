@@ -35,19 +35,16 @@
             <div class="bg-slate-950/40 border border-slate-800/80 rounded-xl p-6 backdrop-blur">
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">Admit via Network Form
                 </h2>
-                <div class="space-y-4">
-                    <button id="btnFakeSubmit"
-                        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 px-4 rounded-lg transition-colors shadow-lg shadow-blue-500/10 cursor-pointer text-sm">
-                        Simulate Single Patient Admission Form
-                    </button>
-                </div>
+                <button id="btnFakeSubmit"
+                    class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 px-4 rounded-lg transition-colors shadow-lg shadow-blue-500/10 cursor-pointer text-sm">
+                    Simulate Single Patient Admission Form
+                </button>
             </div>
 
             <div class="bg-slate-950/40 border border-slate-800/80 rounded-xl p-6 backdrop-blur">
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-2">Bulk Patient Import
                     (.CSV)</h2>
-                <p class="text-xs text-slate-400 mb-4">Upload any triage data. The parser dynamically aligns
-                    non-standard headers.</p>
+                <p class="text-xs text-slate-400 mb-4">Upload triage data. The parser dynamically aligns headers.</p>
 
                 <label
                     class="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-lg p-4 cursor-pointer transition-colors group bg-slate-900/30">
@@ -130,7 +127,6 @@
                     tierBadgeClass = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
                 }
 
-                // Format a clean string layout for blood pressure metrics
                 const bpDisplay = (p.Systolic_BP && p.Diastolic_BP) ? `${p.Systolic_BP}/${p.Diastolic_BP} mmHg` : 'N/A';
                 const spo2Display = p.SpO2 ? `${p.SpO2}%` : 'N/A';
                 const hrDisplay = p.Heart_Rate ? `${p.Heart_Rate} BPM` : 'N/A';
@@ -170,14 +166,13 @@
             };
 
             const keyID = discoverTargetColumn(['Patient_ID', 'id', 'pid', 'patientid']);
-            const keyName = discoverTargetColumn(['Patient_Name', 'name', 'pname', 'patientname', 'full_name']);
+            const keyName = discoverTargetColumn(['Patient_Name', 'name', 'pname', 'patientname', 'full_name', 'patient_name']);
             const keyAge = discoverTargetColumn(['Age', 'age', 'patient_age']);
             const keyGender = discoverTargetColumn(['Gender', 'gender', 'sex']);
             const keySymptoms = discoverTargetColumn(['Symptoms', 'symptoms', 'condition', 'symptom']);
             const keyTier = discoverTargetColumn(['Triage_Tier', 'tier', 'priority', 'triage_level']);
             const keyStatus = discoverTargetColumn(['Status', 'status']);
 
-            // NEW: Capture vitals headers from the uploaded file
             const keySysBP = discoverTargetColumn(['Systolic_BP', 'systolic', 'sys_bp', 'bp_sys']);
             const keyDiaBP = discoverTargetColumn(['Diastolic_BP', 'diastolic', 'dia_bp', 'bp_dia']);
             const keyHR = discoverTargetColumn(['Heart_Rate_BPM', 'heart_rate', 'hr', 'bpm', 'pulse']);
@@ -192,7 +187,6 @@
                     Symptoms: row[keySymptoms] || 'No clinical indications logged',
                     Triage_Tier: row[keyTier] || 'Tier 5 - Non-Urgent',
                     Status: row[keyStatus] || 'Awaiting Allocation',
-                    // Save vitals data metrics into the array element
                     Systolic_BP: row[keySysBP] || null,
                     Diastolic_BP: row[keyDiaBP] || null,
                     Heart_Rate: row[keyHR] || null,
@@ -217,27 +211,25 @@
                 }
             });
         });
+
         btnFakeSubmit.addEventListener('click', () => {
-            // Arrays of random clinical data for realistic presentation simulations
-            const mockNames = ["Aarav Mehta", "Ishita Sharma", "Rohan Patel", "Sneha Rao", "Kabir Verma", "Meera Das", "Vikram Malhotra"];
+            const mockNames = ["Aarav Mehta", "Ishita Sharma", "Rohan Patel", "Sneha Rao", "Kabir Verma", "Meera Das"];
             const mockGenders = ["Male", "Female"];
             const mockSymptoms = [
                 "Acute dyspnea with mild chest discomfort.",
                 "Persistent high fever accompanied by a dry cough.",
                 "Severe abdominal pain radiating to the lower back.",
-                "Slight dizziness and localized minor lacerations.",
-                "Sudden hypertensive crisis with a severe headache."
+                "Slight dizziness and localized minor lacerations."
             ];
             const mockTiers = ["Tier 1 - Resuscitation", "Tier 3 - Urgent", "Tier 4 - Less Urgent"];
             const mockStatuses = ["In Progress", "Awaiting Doctor", "In Triage"];
 
-            // Pick a random element from each array
             const randomName = mockNames[Math.floor(Math.random() * mockNames.length)];
             const randomGender = mockGenders[Math.floor(Math.random() * mockGenders.length)];
             const randomSymptom = mockSymptoms[Math.floor(Math.random() * mockSymptoms.length)];
             const randomTier = mockTiers[Math.floor(Math.random() * mockTiers.length)];
             const randomStatus = mockStatuses[Math.floor(Math.random() * mockStatuses.length)];
-            const randomAge = Math.floor(Math.random() * 65) + 18; // Ages between 18 and 83
+            const randomAge = Math.floor(Math.random() * 65) + 18;
 
             const mockIntake = [{
                 Patient_ID: `PT-${Math.floor(Math.random() * 899 + 100)}`,
@@ -247,14 +239,16 @@
                 Symptoms: randomSymptom,
                 Triage_Tier: randomTier,
                 Status: randomStatus,
-                Systolic_BP: Math.floor(Math.random() * 50) + 110,  // 110 - 160
-                Diastolic_BP: Math.floor(Math.random() * 30) + 70,  // 70 - 100
-                Heart_Rate: Math.floor(Math.random() * 40) + 65,    // 65 - 105
-                SpO2: Math.floor(Math.random() * 10) + 90           // 90 - 100
+                Systolic_BP: Math.floor(Math.random() * 50) + 110,
+                Diastolic_BP: Math.floor(Math.random() * 30) + 70,
+                Heart_Rate: Math.floor(Math.random() * 40) + 65,
+                SpO2: Math.floor(Math.random() * 10) + 90
             }];
 
             patientQueue = [...patientQueue, ...mockIntake];
             updateLiveStreamUI();
+        });
+    </script>
+</body>
 
-
-    
+</html>
