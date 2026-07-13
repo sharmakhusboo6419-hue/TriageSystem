@@ -2,252 +2,336 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connected Clinical Monitor - Triage Matrix</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clinical Triage & Patient Streaming Matrix</title>
+
+    <!-- Hospital Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+
+    <!-- Tailwind CSS CDN for Modern UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons for Clean Medical Symbols -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .pulse-indicator {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+    </style>
 </head>
 
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased">
 
-    <header class="border-b border-slate-800 bg-slate-950/50 backdrop-blur px-6 py-4 flex justify-between items-center">
-        <div>
-            <h1 class="text-xl font-bold tracking-tight text-blue-400 flex items-center gap-2">
-                🏥 NODE: General City Hospital (Rourkela Node)
-            </h1>
-            <p class="text-xs text-slate-400 mt-0.5">Enterprise Live Network Triage Matrix</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <span class="relative flex h-3 w-3">
-                <span
-                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-            </span>
-            <span class="text-xs font-mono text-emerald-400">Live Network Active</span>
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600/20 text-blue-400 p-2 rounded-lg border border-blue-500/30">
+                    <i data-lucide="activity" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight text-white flex items-center gap-2">
+                        PulseTriage <span
+                            class="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">v2.4
+                            PRO</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Real-Time Clinical Telemetry & Triage Matrix</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-indicator"></span>
+                <span class="text-xs text-slate-300 font-mono">NODE ACTIVE</span>
+            </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-6 space-y-8">
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Telemetry Metric Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 uppercase tracking-wider font-medium">Total In Queue</p>
+                    <p id="stat-total" class="text-3xl font-bold text-white mt-1">0</p>
+                </div>
+                <div class="p-3 bg-slate-700/40 rounded-lg text-slate-300"><i data-lucide="users"></i></div>
+            </div>
 
-            <div class="bg-slate-950/40 border border-slate-800/80 rounded-xl p-6 backdrop-blur">
-                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">Admit via Network Form
-                </h2>
-                <button id="btnFakeSubmit"
-                    class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 px-4 rounded-lg transition-colors shadow-lg shadow-blue-500/10 cursor-pointer text-sm">
-                    Simulate Single Patient Admission Form
+            <div class="bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 uppercase tracking-wider font-medium">Critical / Level 1</p>
+                    <p id="stat-critical" class="text-3xl font-bold text-rose-500 mt-1">0</p>
+                </div>
+                <div class="p-3 bg-rose-500/10 text-rose-400 rounded-lg"><i data-lucide="alert-triangle"></i></div>
+            </div>
+
+            <div class="bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 uppercase tracking-wider font-medium">Urgent / Level 2</p>
+                    <p id="stat-urgent" class="text-3xl font-bold text-amber-400 mt-1">0</p>
+                </div>
+                <div class="p-3 bg-amber-500/10 text-amber-400 rounded-lg"><i data-lucide="clock"></i></div>
+            </div>
+
+            <div class="bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 uppercase tracking-wider font-medium">System Ingestion</p>
+                    <p class="text-xs text-emerald-400 font-mono mt-2 font-semibold">CSV BULK PARSER READY</p>
+                </div>
+                <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg"><i data-lucide="file-spread-sheet"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Bar & Ingestion Options -->
+        <div
+            class="bg-slate-800/40 border border-slate-700/50 rounded-xl p-6 flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur">
+
+            <!-- Drag & Drop File Zone -->
+            <label class="w-full md:w-auto flex-1 cursor-pointer group">
+                <div
+                    class="flex items-center justify-center gap-3 border-2 border-dashed border-slate-600 group-hover:border-blue-500 bg-slate-900/50 hover:bg-slate-900 transition-all rounded-lg p-4 text-center">
+                    <i data-lucide="upload-cloud" class="w-5 h-5 text-slate-400 group-hover:text-blue-400"></i>
+                    <span class="text-sm font-medium text-slate-300 group-hover:text-white">Drop patient CSV file here
+                        or <span class="text-blue-400 underline">browse</span></span>
+                    <input type="file" id="csvFileInput" accept=".csv" class="hidden" />
+                </div>
+            </label>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <button id="simBtn" onclick="simulatePatient()"
+                    class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-lg font-medium text-sm transition-all shadow-lg shadow-blue-600/20 active:scale-95">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                    Simulate Walk-in Patient
+                </button>
+                <button onclick="clearQueue()"
+                    class="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-3 rounded-lg font-medium text-sm transition-all">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    Clear
                 </button>
             </div>
 
-            <div class="bg-slate-950/40 border border-slate-800/80 rounded-xl p-6 backdrop-blur">
-                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-2">Bulk Patient Import
-                    (.CSV)</h2>
-                <p class="text-xs text-slate-400 mb-4">Upload triage data. The parser dynamically aligns headers.</p>
+        </div>
 
-                <label
-                    class="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-lg p-4 cursor-pointer transition-colors group bg-slate-900/30">
-                    <span class="text-sm text-slate-300 group-hover:text-blue-400 font-medium mb-1">Click to select CSV
-                        File</span>
-                    <span class="text-xs text-slate-500">Accepts any formatted sheet layout</span>
-                    <input type="file" id="csvFileInput" accept=".csv" class="hidden" />
-                </label>
-            </div>
-
-        </section>
-
-        <section class="bg-slate-950/40 border border-slate-800/80 rounded-xl overflow-hidden backdrop-blur shadow-xl">
-            <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/20">
-                <h2 class="font-semibold text-slate-200 tracking-tight">Live Managed Stream (Screen Real-Time Rank)</h2>
-                <div
-                    class="bg-slate-800 text-slate-300 font-mono text-xs px-2.5 py-1 rounded-md border border-slate-700">
-                    Total In Queue: <span id="queueCounter" class="text-blue-400 font-bold">0</span>
-                </div>
+        <!-- Main Data Queue Table -->
+        <div class="bg-slate-800/40 border border-slate-700/50 rounded-xl overflow-hidden shadow-xl">
+            <div class="px-6 py-4 border-b border-slate-700/60 flex items-center justify-between bg-slate-900/40">
+                <h2 class="font-semibold text-white flex items-center gap-2">
+                    <i data-lucide="list" class="w-4 h-4 text-blue-400"></i> Live Triage Queue Matrix
+                </h2>
+                <span class="text-xs text-slate-400 font-mono">AUTOSCALE COLUMNS ENABLED</span>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr
-                            class="border-b border-slate-800 bg-slate-900/40 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                            <th class="py-3 px-6">Patient ID</th>
-                            <th class="py-3 px-6">Name & Age</th>
-                            <th class="py-3 px-6">Patient Vitals Diagnostics</th>
-                            <th class="py-3 px-6">Symptoms</th>
-                            <th class="py-3 px-6">Triage Level</th>
-                            <th class="py-3 px-6 text-right">Operational Status</th>
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead
+                        class="bg-slate-900/80 text-xs text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700">
+                        <tr>
+                            <th class="px-6 py-3">Patient Name</th>
+                            <th class="px-6 py-3">Age / Sex</th>
+                            <th class="px-6 py-3">Triage Level</th>
+                            <th class="px-6 py-3">Vitals (HR / BP / SpO₂)</th>
+                            <th class="px-6 py-3">Chief Complaint</th>
+                            <th class="px-6 py-3 text-right">Timestamp</th>
                         </tr>
                     </thead>
-                    <tbody id="patientStreamTarget" class="divide-y divide-slate-800/50 text-sm font-medium">
-                        <tr id="emptyRowPlaceholder">
-                            <td colspan="6" class="py-12 text-center text-slate-500 text-xs tracking-wide">
-                                No records active in matrix stream. Upload a CSV or simulate entry to initiate.
+                    <tbody id="queueTableBody" class="divide-y divide-slate-700/50 font-mono">
+                        <!-- Empty State -->
+                        <tr id="emptyRow">
+                            <td colspan="6" class="px-6 py-12 text-center text-slate-500 font-sans">
+                                <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2 text-slate-600"></i>
+                                No patients currently in queue. Upload a CSV file or click simulate to stream entries.
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </section>
+        </div>
 
     </main>
 
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-4 text-center text-xs text-slate-500">
+        PulseTriage Engine &bull; Enterprise Bulk Ingestion Compatible &bull; Active Clinical Protocol
+    </footer>
+
+    <!-- Lucide Icon Renderer Script -->
     <script>
+        lucide.createIcons();
+
+        // Core Data Array & Counters
         let patientQueue = [];
 
-        const csvInput = document.getElementById('csvFileInput');
-        const streamTarget = document.getElementById('patientStreamTarget');
-        const queueCounter = document.getElementById('queueCounter');
-        const emptyPlaceholder = document.getElementById('emptyRowPlaceholder');
-        const btnFakeSubmit = document.getElementById('btnFakeSubmit');
-
-        function updateLiveStreamUI() {
-            if (patientQueue.length === 0) {
-                emptyPlaceholder.style.display = 'table-row';
-                queueCounter.textContent = '0';
-                return;
+        // Fuzzy Matching CSV Header Keys
+        function getHeaderValue(row, possibleKeys) {
+            const keys = Object.keys(row);
+            for (let pKey of possibleKeys) {
+                const matched = keys.find(k => k.trim().toLowerCase() === pKey.toLowerCase());
+                if (matched) return row[matched];
             }
-
-            emptyPlaceholder.style.display = 'none';
-            queueCounter.textContent = patientQueue.length;
-
-            const rowsToRemove = streamTarget.querySelectorAll('tr:not(#emptyRowPlaceholder)');
-            rowsToRemove.forEach(row => row.remove());
-
-            patientQueue.forEach(p => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-900/30 transition-colors duration-150 border-b border-slate-800/30";
-
-                let tierBadgeClass = "bg-slate-800 text-slate-300";
-                if (p.Triage_Tier.toLowerCase().includes('1') || p.Triage_Tier.toLowerCase().includes('resuscitation')) {
-                    tierBadgeClass = "bg-rose-500/10 text-rose-400 border border-rose-500/20";
-                } else if (p.Triage_Tier.toLowerCase().includes('3') || p.Triage_Tier.toLowerCase().includes('urgent')) {
-                    tierBadgeClass = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
-                } else {
-                    tierBadgeClass = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                }
-
-                const bpDisplay = (p.Systolic_BP && p.Diastolic_BP) ? `${p.Systolic_BP}/${p.Diastolic_BP} mmHg` : 'N/A';
-                const spo2Display = p.SpO2 ? `${p.SpO2}%` : 'N/A';
-                const hrDisplay = p.Heart_Rate ? `${p.Heart_Rate} BPM` : 'N/A';
-
-                tr.innerHTML = `
-                    <td class="py-4 px-6 font-mono text-xs text-blue-400">${p.Patient_ID}</td>
-                    <td class="py-4 px-6">
-                        <div class="text-slate-200 font-semibold">${p.Patient_Name}</div>
-                        <div class="text-slate-400 text-xs mt-0.5">${p.Age} Yrs / ${p.Gender}</div>
-                    </td>
-                    <td class="py-4 px-6">
-                        <div class="flex flex-wrap gap-2 text-xs">
-                            <span class="bg-slate-800/60 px-2 py-0.5 rounded text-slate-300">💓 HR: <strong class="text-slate-100">${hrDisplay}</strong></span>
-                            <span class="bg-slate-800/60 px-2 py-0.5 rounded text-slate-300">🫁 SpO₂: <strong class="text-slate-100">${spo2Display}</strong></span>
-                            <span class="bg-slate-800/60 px-2 py-0.5 rounded text-slate-300">🩸 BP: <strong class="text-slate-100">${bpDisplay}</strong></span>
-                        </div>
-                    </td>
-                    <td class="py-4 px-6 text-slate-300 text-xs max-w-xs truncate" title="${p.Symptoms}">${p.Symptoms}</td>
-                    <td class="py-4 px-6"><span class="px-2.5 py-1 rounded text-xs font-semibold ${tierBadgeClass}">${p.Triage_Tier}</span></td>
-                    <td class="py-4 px-6 text-right text-xs font-mono text-slate-400">${p.Status}</td>
-                `;
-                streamTarget.appendChild(tr);
-            });
+            return 'N/A';
         }
 
-        function smartParseCSV(rawArrayRows) {
-            if (!rawArrayRows || rawArrayRows.length === 0) return [];
-
-            const fileHeaders = Object.keys(rawArrayRows[0]);
-
-            const discoverTargetColumn = (alternativeTerms) => {
-                return fileHeaders.find(header =>
-                    alternativeTerms.some(term =>
-                        header.toLowerCase().replace(/[^a-z0-9]/g, '') === term.toLowerCase().replace(/[^a-z0-9]/g, '')
-                    )
-                );
-            };
-
-            const keyID = discoverTargetColumn(['Patient_ID', 'id', 'pid', 'patientid']);
-            const keyName = discoverTargetColumn(['Patient_Name', 'name', 'pname', 'patientname', 'full_name', 'patient_name']);
-            const keyAge = discoverTargetColumn(['Age', 'age', 'patient_age']);
-            const keyGender = discoverTargetColumn(['Gender', 'gender', 'sex']);
-            const keySymptoms = discoverTargetColumn(['Symptoms', 'symptoms', 'condition', 'symptom']);
-            const keyTier = discoverTargetColumn(['Triage_Tier', 'tier', 'priority', 'triage_level']);
-            const keyStatus = discoverTargetColumn(['Status', 'status']);
-
-            const keySysBP = discoverTargetColumn(['Systolic_BP', 'systolic', 'sys_bp', 'bp_sys']);
-            const keyDiaBP = discoverTargetColumn(['Diastolic_BP', 'diastolic', 'dia_bp', 'bp_dia']);
-            const keyHR = discoverTargetColumn(['Heart_Rate_BPM', 'heart_rate', 'hr', 'bpm', 'pulse']);
-            const keySpO2 = discoverTargetColumn(['SpO2_Percentage', 'spo2', 'oxygen', 'o2', 'spo2_percentage']);
-
-            return rawArrayRows.map(row => {
-                return {
-                    Patient_ID: row[keyID] || `PT-${Math.floor(Math.random() * 9000 + 1000)}`,
-                    Patient_Name: row[keyName] || 'Anonymous Intake',
-                    Age: row[keyAge] || 'N/A',
-                    Gender: row[keyGender] || 'N/A',
-                    Symptoms: row[keySymptoms] || 'No clinical indications logged',
-                    Triage_Tier: row[keyTier] || 'Tier 5 - Non-Urgent',
-                    Status: row[keyStatus] || 'Awaiting Allocation',
-                    Systolic_BP: row[keySysBP] || null,
-                    Diastolic_BP: row[keyDiaBP] || null,
-                    Heart_Rate: row[keyHR] || null,
-                    SpO2: row[keySpO2] || null
-                };
-            });
-        }
-
-        csvInput.addEventListener('change', function (e) {
+        // CSV File Reader Listener
+        document.getElementById('csvFileInput').addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: function (results) {
-                    const mappedData = smartParseCSV(results.data);
-                    patientQueue = [...patientQueue, ...mappedData];
-                    updateLiveStreamUI();
-                    alert(`🎉 Bulk Import Complete! Admitted ${mappedData.length} records.`);
-                    csvInput.value = '';
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+                parseCSVText(evt.target.result);
+            };
+            reader.readAsText(file);
+        });
+
+        // Simple CSV Line Parser
+        function parseCSVText(csvText) {
+            const lines = csvText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if (lines.length < 2) return;
+
+            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.replace(/"/g, '').trim());
+                let rowObj = {};
+                headers.forEach((h, idx) => { rowObj[h] = values[idx] || 'N/A'; });
+
+                const patient = {
+                    name: getHeaderValue(rowObj, ['name', 'patient_name', 'pname', 'full_name']),
+                    age: getHeaderValue(rowObj, ['age', 'patient_age']),
+                    sex: getHeaderValue(rowObj, ['gender', 'sex', 'g']),
+                    triage: getHeaderValue(rowObj, ['triage', 'triage_level', 'level', 'priority']),
+                    hr: getHeaderValue(rowObj, ['heart_rate', 'hr', 'pulse']),
+                    bp: getHeaderValue(rowObj, ['bp', 'blood_pressure']),
+                    spo2: getHeaderValue(rowObj, ['spo2', 'oxygen', 'o2']),
+                    complaint: getHeaderValue(rowObj, ['complaint', 'symptoms', 'chief_complaint']),
+                    time: new Date().toLocaleTimeString()
+                };
+
+                patientQueue.push(patient);
+            }
+            renderQueue();
+        }
+
+        // Simulated Single Walk-In
+        function simulatePatient() {
+            const names = ['Aarav Patel', 'Priya Sharma', 'David Miller', 'Ananya Gupta', 'Marcus Vance'];
+            const complaints = ['Severe Chest Pain', 'Acute Dyspnea', 'Mild Abdominal Discomfort', 'Laceration on forearm', 'High Fever & Chills'];
+            const levels = ['Resuscitation', 'Emergent', 'Urgent', 'Non-Urgent'];
+
+            const randomPatient = {
+                name: names[Math.floor(Math.random() * names.length)],
+                age: Math.floor(Math.random() * 50) + 20,
+                sex: Math.random() > 0.5 ? 'M' : 'F',
+                triage: levels[Math.floor(Math.random() * levels.length)],
+                hr: Math.floor(Math.random() * 40) + 70,
+                bp: `${Math.floor(Math.random() * 30) + 110}/${Math.floor(Math.random() * 20) + 70}`,
+                spo2: Math.floor(Math.random() * 8) + 92 + '%',
+                complaint: complaints[Math.floor(Math.random() * complaints.length)],
+                time: new Date().toLocaleTimeString()
+            };
+
+            patientQueue.unshift(randomPatient);
+            renderQueue();
+        }
+
+        // Clear Button
+        function clearQueue() {
+            patientQueue = [];
+            renderQueue();
+        }
+
+        // Render Queue Table & Stats
+        function renderQueue() {
+            const tbody = document.getElementById('queueTableBody');
+            tbody.innerHTML = '';
+
+            if (patientQueue.length === 0) {
+                tbody.innerHTML = `
+          <tr id="emptyRow">
+            <td colspan="6" class="px-6 py-12 text-center text-slate-500 font-sans">
+              <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2 text-slate-600"></i>
+              No patients currently in queue. Upload a CSV file or click simulate to stream entries.
+            </td>
+          </tr>`;
+                document.getElementById('stat-total').innerText = '0';
+                document.getElementById('stat-critical').innerText = '0';
+                document.getElementById('stat-urgent').innerText = '0';
+                lucide.createIcons();
+                return;
+            }
+
+            let criticalCount = 0;
+            let urgentCount = 0;
+
+            patientQueue.forEach(p => {
+                let badgeStyle = "bg-slate-700 text-slate-300";
+                const tLower = p.triage.toLowerCase();
+
+                if (tLower.includes('resus') || tLower.includes('1') || tLower.includes('critical')) {
+                    badgeStyle = "bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                    criticalCount++;
+                } else if (tLower.includes('emerg') || tLower.includes('2') || tLower.includes('urgent')) {
+                    badgeStyle = "bg-amber-500/20 text-amber-400 border border-amber-500/30";
+                    urgentCount++;
+                } else if (tLower.includes('non')) {
+                    badgeStyle = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
                 }
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/60 transition-colors font-sans";
+                tr.innerHTML = `
+          <td class="px-6 py-4 font-semibold text-white">${p.name}</td>
+          <td class="px-6 py-4 text-slate-400">${p.age} / ${p.sex}</td>
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${badgeStyle}">
+              ${p.triage}
+            </span>
+          </td>
+          <td class="px-6 py-4 font-mono text-xs text-slate-300">
+            <span class="text-rose-400">${p.hr} bpm</span> | <span>${p.bp}</span> | <span class="text-blue-400">${p.spo2}</span>
+          </td>
+          <td class="px-6 py-4 text-slate-300">${p.complaint}</td>
+          <td class="px-6 py-4 text-right text-xs text-slate-500 font-mono">${p.time}</td>
+        `;
+                tbody.appendChild(tr);
             });
-        });
 
-        btnFakeSubmit.addEventListener('click', () => {
-            const mockNames = ["Aarav Mehta", "Ishita Sharma", "Rohan Patel", "Sneha Rao", "Kabir Verma", "Meera Das"];
-            const mockGenders = ["Male", "Female"];
-            const mockSymptoms = [
-                "Acute dyspnea with mild chest discomfort.",
-                "Persistent high fever accompanied by a dry cough.",
-                "Severe abdominal pain radiating to the lower back.",
-                "Slight dizziness and localized minor lacerations."
-            ];
-            const mockTiers = ["Tier 1 - Resuscitation", "Tier 3 - Urgent", "Tier 4 - Less Urgent"];
-            const mockStatuses = ["In Progress", "Awaiting Doctor", "In Triage"];
+            // Update Header Cards
+            document.getElementById('stat-total').innerText = patientQueue.length;
+            document.getElementById('stat-critical').innerText = criticalCount;
+            document.getElementById('stat-urgent').innerText = urgentCount;
 
-            const randomName = mockNames[Math.floor(Math.random() * mockNames.length)];
-            const randomGender = mockGenders[Math.floor(Math.random() * mockGenders.length)];
-            const randomSymptom = mockSymptoms[Math.floor(Math.random() * mockSymptoms.length)];
-            const randomTier = mockTiers[Math.floor(Math.random() * mockTiers.length)];
-            const randomStatus = mockStatuses[Math.floor(Math.random() * mockStatuses.length)];
-            const randomAge = Math.floor(Math.random() * 65) + 18;
-
-            const mockIntake = [{
-                Patient_ID: `PT-${Math.floor(Math.random() * 899 + 100)}`,
-                Patient_Name: randomName,
-                Age: randomAge.toString(),
-                Gender: randomGender,
-                Symptoms: randomSymptom,
-                Triage_Tier: randomTier,
-                Status: randomStatus,
-                Systolic_BP: Math.floor(Math.random() * 50) + 110,
-                Diastolic_BP: Math.floor(Math.random() * 30) + 70,
-                Heart_Rate: Math.floor(Math.random() * 40) + 65,
-                SpO2: Math.floor(Math.random() * 10) + 90
-            }];
-
-            patientQueue = [...patientQueue, ...mockIntake];
-            updateLiveStreamUI();
-        });
+            lucide.createIcons();
+        }
     </script>
 </body>
 
